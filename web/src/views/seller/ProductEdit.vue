@@ -70,10 +70,7 @@ async function productSave() {
     return
   }
 
-  let id = query["id"]
-  if (id) {
-    product.Id = id - 1 + 1
-  }
+  product.Id = query["id"]
   product.Name = productName.value
   product.Des = productDescription.value
   product.Content = productContent.value

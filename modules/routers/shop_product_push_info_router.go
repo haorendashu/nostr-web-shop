@@ -8,14 +8,13 @@ import (
 	"nostr-web-shop/modules/consts"
 	"nostr-web-shop/modules/dtos"
 	"nostr-web-shop/modules/models"
-	"strconv"
+	"nostr-web-shop/modules/utils"
 )
 
 func ShopProductPushInfoGet(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id parse error"))
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
 		return
 	}
 
@@ -56,7 +55,7 @@ func ShopProductPushInfoSave(c *gin.Context) {
 		return
 	}
 
-	if pushDto.Pid <= 0 || (pushDto.Status > 0 && pushDto.NoticePubkey == "") {
+	if pushDto.Pid == "" || (pushDto.Status > 0 && pushDto.NoticePubkey == "") {
 		log.Printf("ShopProductPushInfoSave dto error %v", pushDto)
 		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "Arg error"))
 		return
@@ -94,6 +93,7 @@ func ShopProductPushInfoSave(c *gin.Context) {
 
 	info := &models.ProductPushInfo{}
 	deepcopier.Copy(pushDto).To(info)
+	info.Id = utils.RandomId()
 	if !models.ObjInsert(info, session) {
 		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "save fail"))
 		return

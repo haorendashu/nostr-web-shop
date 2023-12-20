@@ -1,7 +1,7 @@
 package dtos
 
 type ProductDto struct {
-	Id        int64
+	Id        string
 	Pubkey    string
 	UpdatedAt int64
 	CreatedAt int64

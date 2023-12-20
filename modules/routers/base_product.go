@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"nostr-web-shop/modules/consts"
 	"nostr-web-shop/modules/models"
-	"strconv"
 )
 
 func BaseProductList(c *gin.Context) {
@@ -18,10 +17,9 @@ func BaseProductList(c *gin.Context) {
 }
 
 func BaseProductGet(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id parse error"))
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
 		return
 	}
 

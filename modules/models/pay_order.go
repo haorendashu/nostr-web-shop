@@ -1,8 +1,8 @@
 package models
 
 type PayOrder struct {
-	Id          int64  `xorm:"pk autoincr"`
-	Oid         int64  `xorm:"notnull"`
+	Id          string `xorm:"pk"`
+	Oid         string `xorm:"notnull index(idx_pay_order)"`
 	Price       int    `xorm:"notnull"` // milisats, sats num * 1000
 	Pr          string `xorm:"notnull varchar(2048)"`
 	VerifyUrl   string `xorm:"notnull varchar(512)"`

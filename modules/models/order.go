@@ -1,8 +1,8 @@
 package models
 
 type Order struct {
-	Id          int64  `xorm:"pk autoincr"`
-	Pubkey      string `xorm:"notnull varchar(64)"`
+	Id          string `xorm:"pk"`
+	Pubkey      string `xorm:"notnull varchar(64) index(idx_order)"`
 	UpdatedAt   int64  `xorm:"notnull"`
 	CreatedAt   int64  `xorm:"notnull"`
 	Status      int    `xorm:"notnull"`

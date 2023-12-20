@@ -1,8 +1,8 @@
 package dtos
 
 type ProductPushInfoDto struct {
-	Id           int64
-	Pid          int64
+	Id           string
+	Pid          string
 	Status       int
 	NoticePubkey string
 	PushAddress  string

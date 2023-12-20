@@ -6,7 +6,7 @@ import (
 )
 
 type Product struct {
-	Id        int64  `xorm:"pk autoincr"`
+	Id        string `xorm:"pk"`
 	Pubkey    string `xorm:"notnull varchar(64)"`
 	UpdatedAt int64  `xorm:"notnull"`
 	CreatedAt int64  `xorm:"notnull"`
@@ -19,7 +19,7 @@ type Product struct {
 	Lnwallet  string `xorm:"notnull varchar(128)"`
 }
 
-func ProductGet(id int64, sessions ...*xorm.Session) *Product {
+func ProductGet(id string, sessions ...*xorm.Session) *Product {
 	o := &Product{}
 	if objGet(sessions, o, "id = ?", id) {
 		return o
@@ -27,7 +27,7 @@ func ProductGet(id int64, sessions ...*xorm.Session) *Product {
 	return nil
 }
 
-func ProductDel(pid int64, sessions ...*xorm.Session) error {
+func ProductDel(pid string, sessions ...*xorm.Session) error {
 	s := getSession(sessions)
 
 	sql := "delete from product where id = ?"

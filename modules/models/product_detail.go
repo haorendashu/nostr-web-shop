@@ -3,8 +3,8 @@ package models
 import "xorm.io/xorm"
 
 type ProductDetail struct {
-	Id     int64  `xorm:"pk autoincr"`
-	Pid    int64  `xorm:"notnull"`
+	Id     string `xorm:"pk"`
+	Pid    string `xorm:"notnull index(idx_product_detail)"`
 	Status int    `xorm:"notnull"`
 	Code   string `xorm:"notnull"`
 	Name   string `xorm:"notnull"`
@@ -12,7 +12,7 @@ type ProductDetail struct {
 	Stock  int    `xorm:"notnull"`
 }
 
-func ProductDetailDel(pid int64, sessions ...*xorm.Session) error {
+func ProductDetailDel(pid string, sessions ...*xorm.Session) error {
 	s := getSession(sessions)
 
 	sql := "delete from product_detail where pid = ?"
@@ -20,7 +20,7 @@ func ProductDetailDel(pid int64, sessions ...*xorm.Session) error {
 	return err
 }
 
-func ProductDetailList(pid int64, sessions ...*xorm.Session) []*ProductDetail {
+func ProductDetailList(pid string, sessions ...*xorm.Session) []*ProductDetail {
 	sql := "select * from product_detail where pid = ?"
 
 	l := make([]*ProductDetail, 0)
@@ -29,7 +29,7 @@ func ProductDetailList(pid int64, sessions ...*xorm.Session) []*ProductDetail {
 	return l
 }
 
-func ProductDetailListByPids(pids []int64, sessions ...*xorm.Session) []*ProductDetail {
+func ProductDetailListByPids(pids []string, sessions ...*xorm.Session) []*ProductDetail {
 	args := make([]interface{}, 0)
 	sql := "select * from product_detail where pid in ("
 	for _, pid := range pids {

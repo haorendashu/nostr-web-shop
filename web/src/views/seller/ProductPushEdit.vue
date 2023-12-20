@@ -18,10 +18,7 @@ const pushType = ref(1)
 
 async function save() {
   let info = {}
-  let id = query["id"]
-  if (id) {
-    info.Pid = id - 1 + 1
-  }
+  info.Pid = query["id"]
   info.Status = status.value == true ? 1 : -1
   info.NoticePubkey = noticePubkey.value
   info.PushAddress = pushAddress.value

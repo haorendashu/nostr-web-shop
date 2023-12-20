@@ -9,7 +9,6 @@ import (
 	"nostr-web-shop/modules/dtos"
 	"nostr-web-shop/modules/models"
 	"nostr-web-shop/modules/utils"
-	"strconv"
 )
 
 // add a product
@@ -70,9 +69,9 @@ func ShopProductAdd(c *gin.Context) {
 	product.Price = minPrice
 	product.Pubkey = pubkey
 
-	if product.Id <= 0 {
+	if product.Id == "" {
 		// this is a new action
-		product.Id = 0
+		product.Id = utils.RandomId()
 		product.CreatedAt = now
 
 		if result := models.ObjInsert(product, session); !result {
@@ -80,6 +79,7 @@ func ShopProductAdd(c *gin.Context) {
 			return
 		}
 		for _, pd := range productDetails {
+			pd.Id = utils.RandomId()
 			pd.Pid = product.Id
 			pd.Status = consts.DATA_STATUS_OK
 			if result := models.ObjInsert(pd, session); !result {
@@ -115,6 +115,7 @@ func ShopProductAdd(c *gin.Context) {
 			return
 		}
 		for _, pd := range productDetails {
+			pd.Id = utils.RandomId()
 			pd.Pid = product.Id
 			pd.Status = consts.DATA_STATUS_OK
 			if !models.ObjInsert(pd, session) {
@@ -133,29 +134,36 @@ func ShopProductAdd(c *gin.Context) {
 
 // delete a product
 func ShopProductDel(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id parse error"))
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
 		return
 	}
 
-	if id > 0 {
-		// TODO check pubkey
-
-		models.ProductDel(id)
-		models.ProductDetailDel(id)
+	product := models.ProductGet(id)
+	if product == nil {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "OK"))
+		return
 	}
+	pubkey := c.GetString(SESSION_PUBKEY)
+
+	if product.Pubkey != pubkey {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "pubkey not equal"))
+		return
+	}
+
+	models.ProductDel(id)
+	models.ProductDetailDel(id)
+	models.ProductPushInfoDel(id)
 
 	c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "OK"))
 }
 
 // get a product
 func ShopProductGet(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id parse error"))
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
 		return
 	}
 
@@ -173,9 +181,9 @@ func ShopProductGet(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func productDtoGet(id int64) *dtos.ProductDto {
+func productDtoGet(id string) *dtos.ProductDto {
 	productDto := &dtos.ProductDto{}
-	if id > 0 {
+	if id != "" {
 		product := models.ProductGet(id)
 		if product != nil {
 			deepcopier.Copy(product).To(productDto)
@@ -201,9 +209,9 @@ func ShopProductList(c *gin.Context) {
 	args.Pubkey = pubkey
 
 	list := models.ProductList(args)
-	detailListMap := make(map[int64][]*dtos.ProductDetailDto)
+	detailListMap := make(map[string][]*dtos.ProductDetailDto)
 
-	pids := make([]int64, 0)
+	pids := make([]string, 0)
 	for _, product := range list {
 		pids = append(pids, product.Id)
 	}
