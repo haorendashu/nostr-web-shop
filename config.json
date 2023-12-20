@@ -1,0 +1,8 @@
+{
+  "Server": ":9991",
+  "DBPath": "root:1234@/nostrwebshop?charset=utf8mb4",
+  "DBShowLog": true,
+  "RootFiles": ["favicon.ico"],
+  "ShopPubkeys": ["37c10448a0fd9295d166100dcd80b01f52f3cc70c98431a89f480fc9f8256861"],
+  "LoginEventU": "https://api.nostrmo.com/login"
+}

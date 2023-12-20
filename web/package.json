@@ -1,0 +1,25 @@
+{
+  "name": "nostr-web-shop",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chenfengyuan/vue-qrcode": "^2.0.0",
+    "@nostr-dev-kit/ndk": "^2.2.0",
+    "@vueup/vue-quill": "^1.2.0",
+    "axios": "^1.6.2",
+    "js-base64": "^3.7.5",
+    "pinia": "^2.1.7",
+    "qrcode": "^1.5.3",
+    "vue": "^3.3.11",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
+    "vite": "^4.4.11"
+  }
+}
