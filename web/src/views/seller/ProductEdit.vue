@@ -4,10 +4,12 @@ import { useRouter } from 'vue-router'
 import {onMounted, reactive, ref} from "vue"
 import {API} from "../../api/api"
 import {GetQuery} from "../../utils/utils";
+import {UIStore} from "../../stores/UIStore";
 
 const router = useRouter()
 const api = new API()
 const query = GetQuery()
+const uiStore = UIStore()
 
 let product = {}
 
@@ -36,6 +38,37 @@ const editor = ref(null)
 async function productSave() {
   const content = editor.value.getHTML()
   productContent.value = content
+
+  if (!productName.value) {
+    uiStore.toast("Product Name can't be null")
+    return
+  }
+
+  if (!skus[0].Code) {
+    uiStore.toast("Product Code can't be null")
+    return
+  }
+  if (!skus[0].Price && skus[0].Price < 1) {
+    uiStore.toast("Product Price can't be null")
+    return
+  }
+  if (!skus[0].Stock && skus[0].Stock < 1) {
+    uiStore.toast("Product Stock can't be null")
+    return
+  }
+  if (imgs.length <= 0) {
+    uiStore.toast("Image can't be null")
+    return
+  }
+
+  if (!productLNWallet.value) {
+    uiStore.toast("LNWallet can't be null")
+    return
+  }
+  if (productLNWallet.value.indexOf("@getalby.com") < 0) {
+    uiStore.toast("LNWallet must be getalby address")
+    return
+  }
 
   let id = query["id"]
   if (id) {
