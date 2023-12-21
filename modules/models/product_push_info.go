@@ -3,8 +3,8 @@ package models
 import "xorm.io/xorm"
 
 type ProductPushInfo struct {
-	Id           string `xorm:"pk"`
-	Pid          string `xorm:"notnull index(idx_product_push_info)"`
+	Id           string `xorm:"pk varchar(32)"`
+	Pid          string `xorm:"notnull varchar(32) index(idx_product_push_info)"`
 	Status       int    `xorm:"notnull"`
 	NoticePubkey string `xorm:"notnull"`
 	PushAddress  string `xorm:"notnull"`

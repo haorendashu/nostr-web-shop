@@ -2,18 +2,46 @@
 import HeadComponent from '../components/HeadComponent.vue'
 import OrderProductComponent from "../components/OrderProductComponent.vue";
 import { useRouter } from 'vue-router'
+import {GetQuery} from "../utils/utils";
+import {onMounted, reactive, ref} from "vue";
+import {API} from "../api/api";
 
+const query = GetQuery()
 const router = useRouter()
+const api = new API()
+
+const product = reactive({})
+const num = ref(query["num"] - 1 + 1)
+const seller = ref("")
+const price = ref(1)
+
 function placeOrder() {
   router.push("/orders/pay")
 }
+
+onMounted(async () => {
+  let id = query["id"]
+
+  let result = await api.baseProductGet(id)
+  if (result && result.data) {
+    product.value = result.data
+    seller.value = result.data.Pubkey
+
+    if (result.data.Skus && result.data.Skus.length > 0) {
+      let sku = result.data.Skus[0]
+      price.value = sku.Price
+    }
+  }
+})
 </script>
 
 <template>
   <HeadComponent title="Place Order"></HeadComponent>
   <div class="orderNew container">
 
-    <OrderProductComponent seller="29320975df855fe34a7b45ada2421e2c741c37c0136901fe477133a91eb18b07"></OrderProductComponent>
+    <div class="orderProducts m_t_1">
+      <OrderProductComponent :product="product" :num="num" :seller="seller"></OrderProductComponent>
+    </div>
 
     <div class="orderPlaceInfo">
       <hr/>
@@ -22,7 +50,7 @@ function placeOrder() {
           Total
         </div>
         <div class="orderTotalR">
-          3000
+          {{num * price}}
         </div>
       </div>
       <div style="margin-top: 0.6rem">
@@ -49,7 +77,7 @@ function placeOrder() {
   flex-direction: column;
   align-items: stretch;
 }
-.orderProduct {
+.orderProducts {
   flex-grow: 1;
 }
 .orderPlaceInfo {

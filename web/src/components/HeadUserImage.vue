@@ -32,7 +32,6 @@ async function updateProfile(_pubkey) {
 }
 
 watch(props, async (newProps, oldProps) => {
-  // console.log("watch: " + props.pubkey)
   if (newProps.pubkey != oldProps.pubkey) {
     await updateProfile(newProps.pubkey)
   }

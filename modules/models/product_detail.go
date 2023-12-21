@@ -3,13 +3,28 @@ package models
 import "xorm.io/xorm"
 
 type ProductDetail struct {
-	Id     string `xorm:"pk"`
-	Pid    string `xorm:"notnull index(idx_product_detail)"`
+	Id     string `xorm:"pk varchar(32)"`
+	Pid    string `xorm:"notnull varchar(32) index(idx_product_detail)"`
 	Status int    `xorm:"notnull"`
 	Code   string `xorm:"notnull"`
 	Name   string `xorm:"notnull"`
 	Price  int    `xorm:"notnull"` // milisats, sats num * 1000
 	Stock  int    `xorm:"notnull"`
+}
+
+func ProductDetailUpdateStock(id string, stock int, sessions ...*xorm.Session) error {
+	s := getSession(sessions)
+	sql := "update product_detail set stock = ? where id = ?"
+	_, err := s.Exec(sql, stock, id)
+	return err
+}
+
+func ProductDetailGet(id string, sessions ...*xorm.Session) *ProductDetail {
+	o := &ProductDetail{}
+	if objGet(sessions, o, "id = ?", id) {
+		return o
+	}
+	return nil
 }
 
 func ProductDetailDel(pid string, sessions ...*xorm.Session) error {

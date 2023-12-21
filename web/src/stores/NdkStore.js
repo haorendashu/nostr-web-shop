@@ -71,7 +71,7 @@ export const NdkStore = defineStore({
 })
 
 export function pubkeyShort(pubkey) {
-    var length = pubkey.length;
+    let length = pubkey.length;
     if (length > 6) {
         return pubkey.substring(0, 5) + ":" + pubkey.substring(length - 5)
     }

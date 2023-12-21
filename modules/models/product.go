@@ -6,7 +6,7 @@ import (
 )
 
 type Product struct {
-	Id        string `xorm:"pk"`
+	Id        string `xorm:"pk varchar(32)"`
 	Pubkey    string `xorm:"notnull varchar(64)"`
 	UpdatedAt int64  `xorm:"notnull"`
 	CreatedAt int64  `xorm:"notnull"`

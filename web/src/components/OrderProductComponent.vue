@@ -1,7 +1,7 @@
 
 <script setup>
 import UserComponent from "./UserComponent.vue";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 
 const props = defineProps({
   product: {
@@ -33,24 +33,38 @@ const title = ref("")
 const price = ref(1)
 
 onMounted(async () => {
-  let imgs = props.product.Imgs.split(",")
-  if (imgs != null && imgs.length > 0) {
-    img.value = imgs[0]
-  }
-
-  if (props.product.Skus != null && props.product.Skus.length > 0) {
-    code.value = props.product.Skus[0].Code
-
-    if (props.num) {
-      num.value = props.num
-    } else {
-      num.value = props.product.Skus[0].Stock
-    }
-  }
-
-  title.value = props.product.Name
-  price.value = props.product.Price
+  updateProduct(props.product)
 })
+
+watch(props, async (newProps, oldProps) => {
+  if (title.value != newProps.product.value.Name) {
+    await updateProduct(newProps.product)
+  }
+})
+
+function updateProduct(product) {
+  if (product && product.value) {
+    if (product.value.Imgs) {
+      let imgs = product.value.Imgs.split(",")
+      if (imgs != null && imgs.length > 0) {
+        img.value = imgs[0]
+      }
+    }
+
+    if (product.value.Skus != null && product.value.Skus.length > 0) {
+      code.value = product.value.Skus[0].Code
+
+      if (props.num) {
+        num.value = props.num
+      } else {
+        num.value = product.value.Skus[0].Stock
+      }
+    }
+
+    title.value = product.value.Name
+    price.value = product.value.Price
+  }
+}
 
 </script>
 

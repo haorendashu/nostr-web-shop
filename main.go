@@ -45,7 +45,7 @@ func main() {
 	baseGroup.GET("/product/:id", routers.BaseProductGet)
 	baseGroup.GET("/product/list", routers.BaseProductList)
 	userGroup.POST("/order/add", routers.UserOrderAdd)
-	userGroup.GET("/order/:id", routers.UserOrderGet)
+	userGroup.GET("/orderPay/:id", routers.UserPayOrderGet)
 	userGroup.GET("/order/list", routers.UserOrderList)
 	shopGroup.POST("/product/", routers.ShopProductAdd)
 	shopGroup.GET("/product/:id", routers.ShopProductGet)
