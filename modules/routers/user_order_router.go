@@ -11,6 +11,7 @@ import (
 	"nostr-web-shop/modules/models"
 	"nostr-web-shop/modules/utils"
 	"strings"
+	"time"
 )
 
 // Create a new order
@@ -48,6 +49,7 @@ func UserOrderAdd(c *gin.Context) {
 
 	total := 0
 	lnwallet := ""
+	seller := ""
 	productMap := make(map[string]*models.Product)
 	productDetailMap := make(map[string]*models.ProductDetail)
 	orderProducts := make([]*models.OrderProduct, 0)
@@ -90,6 +92,13 @@ func UserOrderAdd(c *gin.Context) {
 			return
 		}
 
+		if seller == "" {
+			seller = product.Pubkey
+		} else if seller != product.Pubkey {
+			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "Seller not the same"))
+			return
+		}
+
 		imgs := strings.Split(product.Imgs, ",")
 		if imgs != nil && len(imgs) > 0 {
 			orderProduct.Img = imgs[0]
@@ -112,6 +121,8 @@ func UserOrderAdd(c *gin.Context) {
 	//order.PaiedTime
 	order.Price = total
 	order.Comment = orderDto.Comment
+	order.Lnwallet = lnwallet
+	order.Seller = seller
 
 	// begin to save data
 	if result := models.ObjInsert(order); !result {
@@ -162,7 +173,7 @@ func UserPayOrderGet(c *gin.Context) {
 	if payOrder == nil {
 		// need to create a payOrder
 		payInfo := utils.GetAlbyPayInfo(order.Lnwallet, order.Price)
-		if payInfo == nil {
+		if payInfo == nil || payInfo.Pr == "" {
 			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "get payInfo error"))
 			return
 		}
@@ -178,9 +189,16 @@ func UserPayOrderGet(c *gin.Context) {
 		payOrder.CreatedAt = now
 		payOrder.Status = consts.DATA_STATUS_OK
 		payOrder.PayStatus = consts.PAY_STATUS_UNPAY
-		// TODO need to handle these time
-		//payOrder.ExpireTime =
-		//payOrder.CheckedTime =
+
+		invoice, err := utils.LightningInvoiceParse(payInfo.Pr)
+		if err != nil {
+			log.Printf("UserPayOrderGet getInvoiceTimeout error %v", err)
+			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "invoice parse error"))
+			return
+		}
+		beginTime := invoice.Timestamp
+		payOrder.ExpireTime = beginTime.Add(invoice.Expiry()).UnixMilli()
+		payOrder.CheckedTime = beginTime.Add(time.Minute).UnixMilli()
 
 		if result := models.ObjInsert(payOrder); !result {
 			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "payOrder insert fail"))
@@ -197,7 +215,76 @@ func UserPayOrderGet(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// Order Get
+func UserOrderGet(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
+		return
+	}
+
+	order := models.OrderGet(id)
+	if order.Status != consts.DATA_STATUS_OK {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "order status error"))
+		return
+	}
+
+	pubkey := c.GetString(SESSION_PUBKEY)
+	if order.Pubkey != pubkey {
+		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "Seller not the same"))
+		return
+	}
+
+	orderProducts := models.OrderProductListByOids([]string{order.Id})
+	ops := make([]*models.OrderProduct, 0)
+	for _, orderProduct := range orderProducts {
+		ops = append(ops, orderProduct)
+	}
+
+	dto := &dtos.OrderDto{}
+	deepcopier.Copy(order).To(dto)
+	dto.Skus = ops
+
+	result := Result(consts.API_CODE_OK, "OK")
+	result["data"] = dto
+	c.JSON(http.StatusOK, result)
+}
+
 // list user orders
 func UserOrderList(c *gin.Context) {
+	pubkey := c.GetString(SESSION_PUBKEY)
+	orders := models.OrderListByBuyer(pubkey)
+	length := len(orders)
 
+	oids := make([]string, length)
+	for index, order := range orders {
+		oids[index] = order.Id
+	}
+
+	orderProducts := models.OrderProductListByOids(oids)
+	orderProductMap := make(map[string][]*models.OrderProduct)
+	for _, orderProduct := range orderProducts {
+		ops := orderProductMap[orderProduct.OrderId]
+		if ops == nil {
+			ops = make([]*models.OrderProduct, 0)
+		}
+		ops = append(ops, orderProduct)
+
+		orderProductMap[orderProduct.OrderId] = ops
+	}
+
+	list := make([]*dtos.OrderDto, 0)
+	for _, order := range orders {
+		dto := &dtos.OrderDto{}
+		deepcopier.Copy(order).To(dto)
+
+		ops := orderProductMap[order.Id]
+		dto.Skus = ops
+
+		list = append(list, dto)
+	}
+
+	result := Result(consts.API_CODE_OK, "OK")
+	result["list"] = list
+	c.JSON(http.StatusOK, result)
 }

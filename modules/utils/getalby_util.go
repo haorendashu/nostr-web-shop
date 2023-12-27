@@ -14,7 +14,7 @@ func GetAlbyPayInfo(lnwallet string, sats int) *AlbyPayInfo {
 		return nil
 	}
 
-	lud06Link := fmt.Sprintf("https://%s/lnurlp/%s/callback?amount=%d000", strs[0], strs[1], sats)
+	lud06Link := fmt.Sprintf("https://%s/lnurlp/%s/callback?amount=%d000", strs[1], strs[0], sats)
 	response := httpGet(lud06Link)
 	if response.StatusCode == 200 {
 		body, err := io.ReadAll(response.Body)

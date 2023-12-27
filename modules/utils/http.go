@@ -3,12 +3,20 @@ package utils
 import (
 	"log"
 	"net/http"
+	"net/url"
 )
 
-func httpGet(url string) *http.Response {
+func httpGet(rawURL string) *http.Response {
+	URL, err := url.Parse(rawURL)
+	if err != nil {
+		log.Printf("httpGet url.Parse error %v", err)
+		return nil
+	}
+
 	req := &http.Request{
 		Header: baseHeader(),
 		Method: "GET",
+		URL:    URL,
 	}
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {

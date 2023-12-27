@@ -8,7 +8,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  orderStatus: {
+  payStatus: {
     type: String,
     required: false
   },
@@ -23,6 +23,10 @@ const props = defineProps({
   seller: {
     type: String,
     required: false
+  },
+  comment: {
+    type: String,
+    required: false
   }
 })
 
@@ -31,38 +35,41 @@ const code = ref("")
 const num = ref(1)
 const title = ref("")
 const price = ref(1)
+const comment = ref("")
 
 onMounted(async () => {
   updateProduct(props.product)
 })
 
 watch(props, async (newProps, oldProps) => {
-  if (title.value != newProps.product.value.Name) {
+  if (title.value != newProps.product.Name) {
     await updateProduct(newProps.product)
   }
 })
 
 function updateProduct(product) {
-  if (product && product.value) {
-    if (product.value.Imgs) {
-      let imgs = product.value.Imgs.split(",")
+  if (product) {
+    if (product.Imgs) {
+      let imgs = product.Imgs.split(",")
       if (imgs != null && imgs.length > 0) {
         img.value = imgs[0]
       }
     }
 
-    if (product.value.Skus != null && product.value.Skus.length > 0) {
-      code.value = product.value.Skus[0].Code
+    if (product.Skus != null && product.Skus.length > 0) {
+      code.value = product.Skus[0].Code
 
       if (props.num) {
         num.value = props.num
       } else {
-        num.value = product.value.Skus[0].Stock
+        num.value = product.Skus[0].Stock
       }
     }
 
-    title.value = product.value.Name
-    price.value = product.value.Price
+    comment.value = props.comment
+
+    title.value = product.Name
+    price.value = product.Price
   }
 }
 
@@ -73,9 +80,9 @@ function updateProduct(product) {
     <template v-if="seller">
       <div class="orderProductTop">
         <UserComponent :pubkey="props.seller"></UserComponent>
-        <template v-if="orderStatus">
+        <template v-if="payStatus">
           <div class="orderStatus">
-            {{orderStatus}}
+            {{payStatus}}
           </div>
         </template>
       </div>
@@ -98,9 +105,15 @@ function updateProduct(product) {
       </div>
     </div>
     <template v-if="orderPrice">
+      <hr/>
       <div class="orderProductBottom">
         Total {{orderPrice}}
       </div>
+      <template v-if="comment">
+        <div class="comment m_t_05">
+          {{comment}}
+        </div>
+      </template>
     </template>
   </div>
 </template>
@@ -149,5 +162,10 @@ function updateProduct(product) {
 .orderProductBottom {
   display: flex;
   justify-content: end;
+}
+.comment {
+  padding: 1rem;
+  background-color: #ced4da;
+  border-radius: 0.5rem;
 }
 </style>

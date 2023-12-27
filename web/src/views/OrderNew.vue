@@ -10,13 +10,31 @@ const query = GetQuery()
 const router = useRouter()
 const api = new API()
 
-const product = reactive({})
+const products = reactive([])
 const num = ref(query["num"] - 1 + 1)
 const seller = ref("")
 const price = ref(1)
+const comment = ref("")
 
-function placeOrder() {
-  router.push("/orders/pay")
+async function placeOrder() {
+  let skus = []
+  for (let index in products) {
+    let product = products[index]
+    skus.push({
+      "DetailId": product.Skus[0].Id,
+      "Num": num.value,
+    })
+  }
+
+  let orderNewDto = {
+    "Comment": comment.value,
+    "Skus": skus,
+  }
+
+  let result = await api.userOrderAdd(orderNewDto)
+  if (result && result.oid) {
+    router.push("/orders/pay?id=" + result.oid)
+  }
 }
 
 onMounted(async () => {
@@ -24,7 +42,8 @@ onMounted(async () => {
 
   let result = await api.baseProductGet(id)
   if (result && result.data) {
-    product.value = result.data
+    products.splice(0, products.length)
+    products.push(result.data)
     seller.value = result.data.Pubkey
 
     if (result.data.Skus && result.data.Skus.length > 0) {
@@ -40,7 +59,9 @@ onMounted(async () => {
   <div class="orderNew container">
 
     <div class="orderProducts m_t_1">
-      <OrderProductComponent :product="product" :num="num" :seller="seller"></OrderProductComponent>
+      <template v-for="product in products">
+        <OrderProductComponent :product="product" :num="num" :seller="seller"></OrderProductComponent>
+      </template>
     </div>
 
     <div class="orderPlaceInfo">
@@ -54,7 +75,7 @@ onMounted(async () => {
         </div>
       </div>
       <div style="margin-top: 0.6rem">
-        <textarea class="form-control" aria-label="With textarea"></textarea>
+        <textarea class="form-control" aria-label="With textarea" v-model="comment"></textarea>
       </div>
       <div style="display: flex; margin-top: 1rem;">
         <div style="margin-right: auto!important;"></div>

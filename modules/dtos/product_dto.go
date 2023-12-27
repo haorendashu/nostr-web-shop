@@ -17,6 +17,7 @@ type ProductDto struct {
 }
 
 type ProductDetailDto struct {
+	Id    string
 	Code  string
 	Name  string
 	Price int // milisats, sats num * 1000

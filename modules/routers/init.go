@@ -50,8 +50,9 @@ func InitSession() {
 
 func SessionMiddle() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pubkey := GetToken(c)
-		if pubkey == "" {
+		token := GetToken(c)
+		pubkey, existSession := session.Get(token)
+		if !existSession || pubkey == "" {
 			c.JSON(http.StatusOK, Result(consts.API_CODE_FORBIDDEN, "Login need"))
 			c.Abort()
 			return
