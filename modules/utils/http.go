@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func httpGet(rawURL string) *http.Response {
+func HttpGet(rawURL string) *http.Response {
 	URL, err := url.Parse(rawURL)
 	if err != nil {
 		log.Printf("httpGet url.Parse error %v", err)

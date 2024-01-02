@@ -16,12 +16,12 @@ func ShopProductAdd(c *gin.Context) {
 	productDto := &dtos.ProductDto{}
 	if err := c.ShouldBindJSON(productDto); err != nil {
 		log.Printf("ShopProductAdd json parse error %v", err)
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "Arg parse error"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "Arg parse error"))
 		return
 	}
 
 	if productDto.Skus == nil || len(productDto.Skus) == 0 {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "sku can't be null"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "sku can't be null"))
 		return
 	}
 
@@ -31,7 +31,7 @@ func ShopProductAdd(c *gin.Context) {
 
 	deepcopier.Copy(productDto).To(product)
 	if product.Name == "" || product.Imgs == "" || product.Content == "" || product.Price < 1 {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "product args error"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "product args error"))
 		return
 	}
 	minPrice := product.Price
@@ -40,7 +40,7 @@ func ShopProductAdd(c *gin.Context) {
 		deepcopier.Copy(sku).To(productDetail)
 
 		if productDetail.Code == "" || productDetail.Stock <= 0 || productDetail.Price < 1 {
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "product args error"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "product args error"))
 			return
 		}
 
@@ -75,7 +75,7 @@ func ShopProductAdd(c *gin.Context) {
 		product.CreatedAt = now
 
 		if result := models.ObjInsert(product, session); !result {
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "obj save error"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "obj save error"))
 			return
 		}
 		for _, pd := range productDetails {
@@ -83,7 +83,7 @@ func ShopProductAdd(c *gin.Context) {
 			pd.Pid = product.Id
 			pd.Status = consts.DATA_STATUS_OK
 			if result := models.ObjInsert(pd, session); !result {
-				c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "obj save error"))
+				c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "obj save error"))
 				return
 			}
 		}
@@ -92,26 +92,26 @@ func ShopProductAdd(c *gin.Context) {
 		// try to find old product
 		oldProduct := models.ProductGet(product.Id, session)
 		if oldProduct == nil {
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "product can't find"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "product can't find"))
 			return
 		}
 
 		// check pubkey
 		if oldProduct.Pubkey != product.Pubkey {
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "can't has permission"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "can't has permission"))
 			return
 		}
 		// TODO check product if is forbiden
 
 		product.CreatedAt = oldProduct.CreatedAt
 		if !models.ObjUpdate(product.Id, product, session) {
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "product update fail"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "product update fail"))
 			return
 		}
 
 		if err := models.ProductDetailDel(product.Id, session); err != nil {
 			log.Printf("ShopProductAdd ProductDetailDel error %v", err)
-			c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "handle old data fail"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "handle old data fail"))
 			return
 		}
 		for _, pd := range productDetails {
@@ -119,7 +119,7 @@ func ShopProductAdd(c *gin.Context) {
 			pd.Pid = product.Id
 			pd.Status = consts.DATA_STATUS_OK
 			if !models.ObjInsert(pd, session) {
-				c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "productDetail insert fail"))
+				c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "productDetail insert fail"))
 				return
 			}
 		}
@@ -127,7 +127,7 @@ func ShopProductAdd(c *gin.Context) {
 
 	complete = true
 
-	result := Result(consts.API_CODE_OK, "OK")
+	result := Result(consts.RESULT_CODE_OK, "OK")
 	result["pid"] = product.Id
 	c.JSON(http.StatusOK, result)
 }
@@ -136,19 +136,19 @@ func ShopProductAdd(c *gin.Context) {
 func ShopProductDel(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "id can't be null"))
 		return
 	}
 
 	product := models.ProductGet(id)
 	if product == nil {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "OK"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_OK, "OK"))
 		return
 	}
 	pubkey := c.GetString(SESSION_PUBKEY)
 
 	if product.Pubkey != pubkey {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "pubkey not equal"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_OK, "pubkey not equal"))
 		return
 	}
 
@@ -156,14 +156,14 @@ func ShopProductDel(c *gin.Context) {
 	models.ProductDetailDel(id)
 	models.ProductPushInfoDel(id)
 
-	c.JSON(http.StatusOK, Result(consts.API_CODE_OK, "OK"))
+	c.JSON(http.StatusOK, Result(consts.RESULT_CODE_OK, "OK"))
 }
 
 // get a product
 func ShopProductGet(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "id can't be null"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "id can't be null"))
 		return
 	}
 
@@ -171,11 +171,11 @@ func ShopProductGet(c *gin.Context) {
 	productDto := productDtoGet(id)
 
 	if productDto.Pubkey != pubkey {
-		c.JSON(http.StatusOK, Result(consts.API_CODE_FORBIDDEN, "login need"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_FORBIDDEN, "login need"))
 		return
 	}
 
-	result := Result(consts.API_CODE_OK, "OK")
+	result := Result(consts.RESULT_CODE_OK, "OK")
 	result["data"] = productDto
 
 	c.JSON(http.StatusOK, result)
@@ -241,7 +241,7 @@ func ShopProductList(c *gin.Context) {
 		dto.Skus = detailListMap[dto.Id]
 	}
 
-	result := Result(consts.API_CODE_OK, "OK")
+	result := Result(consts.RESULT_CODE_OK, "OK")
 	result["list"] = products
 	c.JSON(http.StatusOK, result)
 }

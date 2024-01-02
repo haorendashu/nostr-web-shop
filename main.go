@@ -34,13 +34,17 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	apiGroup := r.Group("/api")
 	baseGroup := r.Group("/base")
 	userGroup := r.Group("/user")
 	shopGroup := r.Group("/shop")
 
+	apiGroup.Use(routers.ApiMiddle())
 	userGroup.Use(routers.SessionMiddle())
 	shopGroup.Use(routers.SessionShopMiddle())
 
+	apiGroup.GET("/order/:orderProductId", routers.ApiOrderGet)
+	apiGroup.GET("/order/list", routers.ApiOrderList)
 	baseGroup.GET("/login", routers.BaseLogin)
 	baseGroup.GET("/product/:id", routers.BaseProductGet)
 	baseGroup.GET("/product/list", routers.BaseProductList)

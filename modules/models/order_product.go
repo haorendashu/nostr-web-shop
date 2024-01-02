@@ -7,6 +7,7 @@ type OrderProduct struct {
 	OrderId  string `xorm:"notnull varchar(32) index(idx_order_product_oid)"`
 	Pid      string `xorm:"notnull varchar(32) index(idx_order_product_pid)"` // this pid is product id.
 	DetailId string `xorm:"notnull varchar(32)"`
+	Seller   string `xorm:"notnull varchar(64)"`
 	Code     string `xorm:"notnull"`
 	Name     string `xorm:"notnull"`
 	Price    int    `xorm:"notnull"` // milisats, sats num * 1000

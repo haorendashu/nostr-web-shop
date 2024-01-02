@@ -15,7 +15,7 @@ func GetAlbyPayInfo(lnwallet string, sats int) *AlbyPayInfo {
 	}
 
 	lud06Link := fmt.Sprintf("https://%s/lnurlp/%s/callback?amount=%d000", strs[1], strs[0], sats)
-	response := httpGet(lud06Link)
+	response := HttpGet(lud06Link)
 	if response.StatusCode == 200 {
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
@@ -45,4 +45,35 @@ type AlbyPayInfo struct {
 	Status string `json:"status"`
 	Verify string `json:"verify"`
 	Pr     string `json:"pr"`
+}
+
+func GetAlbyPrResult(verifyUrl string) *AlbyPrResult {
+	response := HttpGet(verifyUrl)
+	if response.StatusCode == 200 {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			log.Printf("GetAlbyPrResult io.ReadAll error %v", err)
+			return nil
+		}
+
+		log.Println(string(body))
+
+		prResult := &AlbyPrResult{}
+		err = json.Unmarshal(body, prResult)
+		if err != nil {
+			log.Printf("GetAlbyPrResult json.Unmarshal error %v", err)
+			return nil
+		}
+
+		return prResult
+	}
+
+	return nil
+}
+
+type AlbyPrResult struct {
+	Status  string `json:"status"`
+	Settled bool   `json:"settled"`
+	Pr      string `json:"pr"`
+	//Preimage any    `json:"preimage"`
 }

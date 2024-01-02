@@ -1,0 +1,9 @@
+package consts
+
+const RESULT_CODE_OK = 200
+
+const RESULT_CODE_ERROR = 400
+
+const RESULT_CODE_FORBIDDEN = 403
+
+const RESULT_CODE_NOT_FOUND = 404

@@ -1,6 +1,9 @@
 package models
 
-import "xorm.io/xorm"
+import (
+	"nostr-web-shop/modules/consts"
+	"xorm.io/xorm"
+)
 
 type ProductPushInfo struct {
 	Id           string `xorm:"pk varchar(32)"`
@@ -10,6 +13,20 @@ type ProductPushInfo struct {
 	PushAddress  string `xorm:"notnull"`
 	PushKey      string `xorm:"notnull"`
 	PushType     int    `xorm:"notnull"` // 1 api push, 2 web push
+}
+
+func ProductPushInfoGetByCode(pubkey, code string, sessions ...*xorm.Session) *ProductPushInfo {
+	sql := "select ppi.* from product p inner join product_detail pd on p.id = pd.pid inner join product_push_info ppi on ppi.pid = p.id where p.status = ? and ppi.status = ? and pd.status = ? and p.pubkey = ? and pd.code = ?"
+	sqlArgs := []interface{}{consts.DATA_STATUS_OK, consts.DATA_STATUS_OK, consts.DATA_STATUS_OK, pubkey, code}
+
+	l := make([]*ProductPushInfo, 0)
+	listQuery(sessions, &l, sql, sqlArgs...)
+
+	if len(l) > 0 {
+		return l[0]
+	}
+
+	return nil
 }
 
 func ProductPushInfoGet(id string, sessions ...*xorm.Session) *ProductPushInfo {

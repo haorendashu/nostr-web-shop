@@ -20,7 +20,7 @@ func BaseLogin(c *gin.Context) {
 	authEventData, err := base64.RawStdEncoding.DecodeString(authorizationStr)
 	if err != nil {
 		log.Printf("base64 decode error %v", err)
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "base64 decode error"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "base64 decode error"))
 		return
 	}
 
@@ -28,14 +28,14 @@ func BaseLogin(c *gin.Context) {
 	err = json.Unmarshal(authEventData, event)
 	if err != nil {
 		log.Printf("event json.Unmarshal error %v", err)
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "event json.Unmarshal error"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "event json.Unmarshal error"))
 		return
 	}
 
 	if time.Now().UnixMilli()-event.CreatedAt.Time().UnixMilli() > 1000*60*5 {
 		// CreatedAt is too long
 		log.Println("event sign timeout")
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "event sign timeout"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "event sign timeout"))
 		return
 	}
 
@@ -48,12 +48,12 @@ func BaseLogin(c *gin.Context) {
 	u := utils.CONFIG.LoginEventU
 	if u != loginEventU {
 		log.Println("login fail, u not match")
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "login fail u must be "+u))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "login fail u must be "+u))
 		return
 	}
 	if result, err := event.CheckSignature(); !result || err != nil {
 		log.Println("login fail sign check fail")
-		c.JSON(http.StatusOK, Result(consts.API_CODE_ERROR, "login fail sign check fail"))
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "login fail sign check fail"))
 		return
 	}
 
@@ -62,7 +62,7 @@ func BaseLogin(c *gin.Context) {
 	session.Add(token, event.PubKey)
 
 	// return token
-	result := Result(consts.API_CODE_OK, "OK")
+	result := Result(consts.RESULT_CODE_OK, "OK")
 	result["token"] = token
 	c.JSON(http.StatusOK, result)
 
