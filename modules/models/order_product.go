@@ -15,11 +15,11 @@ type OrderProduct struct {
 	Img      string // image
 }
 
-func OrderProductListByOids(pids []string, sessions ...*xorm.Session) []*OrderProduct {
+func OrderProductListByOids(oids []string, sessions ...*xorm.Session) []*OrderProduct {
 	args := make([]interface{}, 0)
 	sql := "select * from order_product where order_id in ("
-	for _, pid := range pids {
-		args = append(args, pid)
+	for _, oid := range oids {
+		args = append(args, oid)
 		sql += "?,"
 	}
 	sql = sql[:len(sql)-1]

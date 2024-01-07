@@ -98,7 +98,7 @@ func ShopProductAdd(c *gin.Context) {
 
 		// check pubkey
 		if oldProduct.Pubkey != product.Pubkey {
-			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "can't has permission"))
+			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "haven't permission"))
 			return
 		}
 		// TODO check product if is forbiden

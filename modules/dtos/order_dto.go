@@ -1,7 +1,5 @@
 package dtos
 
-import "nostr-web-shop/modules/models"
-
 type OrderDto struct {
 	Id          string
 	Pubkey      string
@@ -15,5 +13,18 @@ type OrderDto struct {
 	Comment     string
 	Seller      string
 
-	Skus []*models.OrderProduct
+	Skus []*OrderProductDto
+}
+
+type OrderProductDto struct {
+	Id       string
+	OrderId  string
+	Pid      string
+	DetailId string
+	Seller   string
+	Code     string
+	Name     string
+	Price    int
+	Num      int
+	Img      string
 }

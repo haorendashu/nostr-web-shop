@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/deepcopier"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"nostr-web-shop/modules/dtos"
 	"nostr-web-shop/modules/models"
 	"nostr-web-shop/modules/utils"
+	"strings"
 	"time"
 )
 
@@ -73,6 +75,103 @@ func UserPayOrderGet(c *gin.Context) {
 	result := Result(consts.RESULT_CODE_OK, "OK")
 	result["data"] = dto
 	c.JSON(http.StatusOK, result)
+}
+
+func PushInfoGet(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "id can't be null"))
+		return
+	}
+	pubkey := c.GetString(SESSION_PUBKEY)
+
+	order, list := GetPushInfo(id)
+	if order.Pubkey != pubkey {
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "haven't permission"))
+		return
+	}
+
+	result := Result(consts.RESULT_CODE_OK, "OK")
+	result["list"] = list
+	c.JSON(http.StatusOK, result)
+}
+
+func GetPushInfo(oid string) (*models.Order, []*dtos.OrderPushInfoDto) {
+	order := models.OrderGet(oid)
+	if order == nil {
+		log.Println("Order not found!")
+		return nil, nil
+	}
+
+	if order.PayStatus != consts.PAY_STATUS_PAIED {
+		log.Println("Order not paid!")
+		return nil, nil
+	}
+
+	pids := make([]string, 0)
+	orderProducts := models.OrderProductListByOids([]string{oid})
+	for _, orderProduct := range orderProducts {
+		pids = append(pids, orderProduct.Pid)
+	}
+
+	pushInfos := models.ProductPushInfoListByPids(pids)
+	pushInfoMap := make(map[string]*models.ProductPushInfo)
+	for _, pushInfo := range pushInfos {
+		pushInfoMap[pushInfo.Pid] = pushInfo
+	}
+
+	now := utils.NowInt64()
+	list := make([]*dtos.OrderPushInfoDto, 0)
+	for _, orderProduct := range orderProducts {
+		pushInfo := pushInfoMap[orderProduct.Pid]
+
+		if pushInfo == nil {
+			log.Printf("product %s can't find product push info", orderProduct.Pid)
+			continue
+		}
+
+		address := pushInfo.PushAddress
+
+		seller := orderProduct.Seller
+		code := orderProduct.Code
+		t := now
+
+		orderProductId := orderProduct.Id
+		buyer := order.Pubkey
+		num := orderProduct.Num
+		comment := order.Comment
+		paidTime := order.PaidTime
+
+		tempStr := fmt.Sprintf("%s%s%d%s%s%d%s%d", seller, code, t, buyer, comment, num, orderProductId, paidTime)
+		log.Printf("pushUrl tempStr %s", tempStr)
+
+		sign := utils.Md5(tempStr + pushInfo.PushKey)
+
+		pushUrl := address
+		if strings.Index(pushUrl, "?") == -1 {
+			pushUrl += "?"
+		}
+
+		pushUrl += "nws-seller=" + seller
+		pushUrl += "&nws-code=" + code
+		pushUrl += "&nws-t=" + fmt.Sprintf("%d", t)
+		pushUrl += "&nws-sign=" + sign
+		pushUrl += "&orderProductId=" + orderProductId
+		pushUrl += "&buyer=" + buyer
+		pushUrl += "&num=" + fmt.Sprintf("%d", num)
+		pushUrl += "&comment=" + comment
+		pushUrl += "&paidTime=" + fmt.Sprintf("%d", paidTime)
+
+		dto := &dtos.OrderPushInfoDto{
+			OrderProductId: orderProductId,
+			PushType:       pushInfo.PushType,
+			PushUrl:        pushUrl,
+		}
+
+		list = append(list, dto)
+	}
+
+	return order, list
 }
 
 // check and update payOrder, order

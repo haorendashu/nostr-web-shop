@@ -5,6 +5,7 @@ import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {API} from "../api/api";
 import {GetQuery} from "../utils/utils";
+import axios from "axios";
 
 const router = useRouter()
 const api = new API()
@@ -15,6 +16,10 @@ const price = ref(0)
 const seller = ref("")
 const name = ref("")
 const code = ref("")
+
+let VerifyUrl = ""
+
+let checkTime = 1000 * 10
 
 onMounted(async () => {
   let id = query["id"]
@@ -43,12 +48,38 @@ onMounted(async () => {
       price.value = p
     }
 
-    let payInfoResult = api.userOrderPayGet(id)
+    let payInfoResult = await api.userOrderPayGet(id)
     if (payInfoResult) {
       pr.value = payInfoResult.data.Pr
+
+      VerifyUrl = payInfoResult.data.VerifyUrl
+      if (payInfoResult.data.PayStatus == 1 && payInfoResult.data.VerifyUrl) {
+        setTimeout(verifyPayResult, checkTime)
+      }
     }
   }
 })
+
+async function verifyPayResult() {
+  if (VerifyUrl) {
+    const result = await axios.get(VerifyUrl)
+    if (result.status == 200) {
+      if (result.data && result.data.settled == true) {
+        console.log("success")
+        // paid success!
+        doAfterPaid()
+        return
+      }
+    }
+
+    // paid unSuccess, check again!
+    setTimeout(verifyPayResult, checkTime)
+  }
+}
+
+function doAfterPaid() {
+
+}
 </script>
 
 <template>

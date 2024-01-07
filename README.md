@@ -118,7 +118,7 @@ All order will push by HTTP GET method and they will contain these arguments:
 
 When you get an order push, you must check the nws-sign, the nsg-sign argument was gen by these step:
 
-1. Gen a text ```str``` like these, ```nws-seller + nws-code + nws-t + buyer + comment + num + orderId + paidTime + PushKey```. The ```str``` also can gen by like this ```nws-seller + nws-code + nws-t + orderArguments + PushKey```. The ```orderArguments``` is all order arguments sorted by names and joined by values.
+1. Gen a text ```str``` like these, ```nws-seller + nws-code + nws-t + buyer + comment + num + orderProductId + paidTime + PushKey```. The ```str``` also can gen by like this ```nws-seller + nws-code + nws-t + orderArguments + PushKey```. The ```orderArguments``` is all order arguments sorted by names and joined by values.
 2. Use ```md5``` method to gen ```nws-sign```, like ```md5(str)```
 
 ### Api push

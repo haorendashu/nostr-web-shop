@@ -29,9 +29,9 @@ func ProductPushInfoGetByCode(pubkey, code string, sessions ...*xorm.Session) *P
 	return nil
 }
 
-func ProductPushInfoGet(id string, sessions ...*xorm.Session) *ProductPushInfo {
+func ProductPushInfoGet(pid string, sessions ...*xorm.Session) *ProductPushInfo {
 	o := &ProductPushInfo{}
-	if objGet(sessions, o, "pid = ?", id) {
+	if objGet(sessions, o, "pid = ?", pid) {
 		return o
 	}
 	return nil
@@ -43,4 +43,20 @@ func ProductPushInfoDel(pid string, sessions ...*xorm.Session) error {
 	sql := "delete from product_push_info where pid = ?"
 	_, err := s.Exec(sql, pid)
 	return err
+}
+
+func ProductPushInfoListByPids(pids []string, sessions ...*xorm.Session) []*ProductPushInfo {
+	args := make([]interface{}, 0)
+	sql := "select * from product_push_info where pid in ("
+	for _, oid := range pids {
+		args = append(args, oid)
+		sql += "?,"
+	}
+	sql = sql[:len(sql)-1]
+	sql += ")"
+
+	l := make([]*ProductPushInfo, 0)
+	listQuery(sessions, &l, sql, args...)
+
+	return l
 }

@@ -173,9 +173,11 @@ func UserOrderGet(c *gin.Context) {
 	}
 
 	orderProducts := models.OrderProductListByOids([]string{order.Id})
-	ops := make([]*models.OrderProduct, 0)
+	ops := make([]*dtos.OrderProductDto, 0)
 	for _, orderProduct := range orderProducts {
-		ops = append(ops, orderProduct)
+		dto := &dtos.OrderProductDto{}
+		deepcopier.Copy(orderProduct).To(dto)
+		ops = append(ops, dto)
 	}
 
 	dto := &dtos.OrderDto{}
@@ -199,13 +201,15 @@ func UserOrderList(c *gin.Context) {
 	}
 
 	orderProducts := models.OrderProductListByOids(oids)
-	orderProductMap := make(map[string][]*models.OrderProduct)
+	orderProductMap := make(map[string][]*dtos.OrderProductDto)
 	for _, orderProduct := range orderProducts {
 		ops := orderProductMap[orderProduct.OrderId]
 		if ops == nil {
-			ops = make([]*models.OrderProduct, 0)
+			ops = make([]*dtos.OrderProductDto, 0)
 		}
-		ops = append(ops, orderProduct)
+		dto := &dtos.OrderProductDto{}
+		deepcopier.Copy(orderProduct).To(dto)
+		ops = append(ops, dto)
 
 		orderProductMap[orderProduct.OrderId] = ops
 	}
