@@ -73,7 +73,6 @@ func UserOrderAdd(c *gin.Context) {
 		orderProduct.DetailId = productDetail.Id
 		orderProduct.Num = sku.Num
 		orderProduct.Id = ""
-		orderProduct.Seller = seller
 
 		product := productMap[orderProduct.Pid]
 		if product == nil {
@@ -98,6 +97,7 @@ func UserOrderAdd(c *gin.Context) {
 			c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "Seller not the same"))
 			return
 		}
+		orderProduct.Seller = seller
 
 		imgs := strings.Split(product.Imgs, ",")
 		if imgs != nil && len(imgs) > 0 {

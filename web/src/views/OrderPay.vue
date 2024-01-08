@@ -18,6 +18,7 @@ const name = ref("")
 const code = ref("")
 
 let VerifyUrl = ""
+let Pid = ""
 
 let checkTime = 1000 * 10
 
@@ -39,7 +40,7 @@ onMounted(async () => {
           ns.push(sku.Name)
           cs.push(sku.Code)
 
-          p += sku.Price
+          p += sku.Price * sku.Num
         }
       }
 
@@ -53,8 +54,11 @@ onMounted(async () => {
       pr.value = payInfoResult.data.Pr
 
       VerifyUrl = payInfoResult.data.VerifyUrl
+      Pid = payInfoResult.data.Id
       if (payInfoResult.data.PayStatus == 1 && payInfoResult.data.VerifyUrl) {
         setTimeout(verifyPayResult, checkTime)
+      } else if (payInfoResult.data.PayStatus == 2) {
+        handlePushInfo()
       }
     }
   }
@@ -77,8 +81,29 @@ async function verifyPayResult() {
   }
 }
 
-function doAfterPaid() {
+async function doAfterPaid() {
+  if (Pid && Pid != "") {
+    let result = await api.userPayOrderCheck(Pid)
+    if (result && result.data) {
+      // pay order check success!
+      // get push info
+      handlePushInfo()
+    }
+  }
+}
 
+async function handlePushInfo() {
+  let id = query["id"]
+  if (id != null) {
+    let pushResult = await api.userOrderPushInfoGet(id)
+    console.log(pushResult)
+    if (pushResult && pushResult.list && pushResult.list.length > 0) {
+      let pushInfo = pushResult.list[0]
+      if (pushInfo && pushInfo.PushType == 2 && pushInfo.PushUrl) {
+        window.location.href = pushInfo.PushUrl
+      }
+    }
+  }
 }
 </script>
 

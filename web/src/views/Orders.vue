@@ -32,6 +32,7 @@ onMounted(async () => {
           }
         ]
       })
+      order.Seller = sku.Seller
     }
 
     orders.push({
@@ -43,7 +44,7 @@ onMounted(async () => {
 
 function payStatus(ps) {
   if (ps == 2) {
-    return "Paied"
+    return "Paid"
   } else {
     return "Unpay"
   }

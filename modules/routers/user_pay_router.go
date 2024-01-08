@@ -6,6 +6,7 @@ import (
 	"github.com/ulule/deepcopier"
 	"log"
 	"net/http"
+	"net/url"
 	"nostr-web-shop/modules/consts"
 	"nostr-web-shop/modules/dtos"
 	"nostr-web-shop/modules/models"
@@ -77,6 +78,20 @@ func UserPayOrderGet(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+func UserPayOrderCheck(c *gin.Context) {
+	pid := c.Param("pid")
+	if pid == "" {
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "pid can't be null"))
+		return
+	}
+
+	checkResult := CheckLightningResult(pid)
+
+	result := Result(consts.RESULT_CODE_OK, "OK")
+	result["data"] = checkResult
+	c.JSON(http.StatusOK, result)
+}
+
 func PushInfoGet(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -86,6 +101,11 @@ func PushInfoGet(c *gin.Context) {
 	pubkey := c.GetString(SESSION_PUBKEY)
 
 	order, list := GetPushInfo(id)
+	if order == nil || len(list) == 0 {
+		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "gen push info error"))
+		return
+	}
+
 	if order.Pubkey != pubkey {
 		c.JSON(http.StatusOK, Result(consts.RESULT_CODE_ERROR, "haven't permission"))
 		return
@@ -139,7 +159,7 @@ func GetPushInfo(oid string) (*models.Order, []*dtos.OrderPushInfoDto) {
 		orderProductId := orderProduct.Id
 		buyer := order.Pubkey
 		num := orderProduct.Num
-		comment := order.Comment
+		comment := url.QueryEscape(order.Comment)
 		paidTime := order.PaidTime
 
 		tempStr := fmt.Sprintf("%s%s%d%s%s%d%s%d", seller, code, t, buyer, comment, num, orderProductId, paidTime)
@@ -215,6 +235,7 @@ func CheckLightningResult(pid string) bool {
 
 		po.PayStatus = consts.PAY_STATUS_PAIED
 		po.UpdatedAt = now
+		po.PaidTime = now
 		if !models.ObjUpdate(po.Id, po, session) {
 			log.Println("checkLightningResult payOrder update fail")
 			return false
@@ -224,8 +245,8 @@ func CheckLightningResult(pid string) bool {
 		o.PayStatus = consts.PAY_STATUS_PAIED
 		o.OrderStatus = consts.ORDER_STATUS_PAIED
 		o.PaidTime = now
-		if !models.ObjUpdate(po.Id, po, session) {
-			log.Println("checkLightningResult payOrder update fail")
+		if !models.ObjUpdate(o.Id, o, session) {
+			log.Println("checkLightningResult order update fail")
 			return false
 		}
 

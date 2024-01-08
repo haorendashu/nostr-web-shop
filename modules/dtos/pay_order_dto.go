@@ -1,6 +1,7 @@
 package dtos
 
 type PayOrderDto struct {
+	Id         string
 	Oid        string
 	Price      int
 	Pr         string

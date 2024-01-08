@@ -11,7 +11,6 @@ type OrderDto struct {
 	Price       int
 	Lnwallet    string
 	Comment     string
-	Seller      string
 
 	Skus []*OrderProductDto
 }

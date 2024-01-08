@@ -86,6 +86,26 @@ export const API = class {
         return result.data
     }
 
+    userPayOrderCheck = async function (id) {
+        const result = await axios.get(G.BasePath + "/user/orderPayCheck/" + id, await this.baseHttpConfig())
+
+        if (!this.resultCheck(result)) {
+            return
+        }
+
+        return result.data
+    }
+
+    userOrderPushInfoGet = async function (id) {
+        const result = await axios.get(G.BasePath + "/user/orderPushInfo/" + id, await this.baseHttpConfig())
+
+        if (!this.resultCheck(result)) {
+            return
+        }
+
+        return result.data
+    }
+
     userOrderPayGet = async function (id) {
         const result = await axios.get(G.BasePath + "/user/orderPay/" + id, await this.baseHttpConfig())
 

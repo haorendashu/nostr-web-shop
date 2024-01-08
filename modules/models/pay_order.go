@@ -16,7 +16,7 @@ type PayOrder struct {
 	CreatedAt   int64  `xorm:"notnull"`
 	Status      int    `xorm:"notnull"`
 	PayStatus   int    `xorm:"notnull"`
-	PaidTime    int
+	PaidTime    int64
 	ExpireTime  int64 `xorm:"notnull"`
 	CheckedTime int64 `xorm:"notnull"` // The next check time
 }
