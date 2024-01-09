@@ -188,6 +188,12 @@ func GetPushInfo(oid string) (*models.Order, []*dtos.OrderPushInfoDto) {
 		//}
 
 		dto := genPushInfo(order, orderProduct, pushInfo)
+
+		if orderProduct.PushCompleted != consts.PUSH_COMPLETED && dto.PushType == consts.PUSH_TYPE_WEB {
+			orderProduct.PushCompleted = consts.PUSH_COMPLETED
+			models.ObjUpdate(orderProduct.Id, orderProduct)
+		}
+
 		list = append(list, dto)
 	}
 

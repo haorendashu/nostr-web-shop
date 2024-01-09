@@ -43,7 +43,7 @@ func checkOrderPush() {
 		pushInfo := models.ProductPushInfoGet(orderProduct.Pid)
 
 		if order != nil && pushInfo != nil {
-			if pushInfo.PushType == 1 {
+			if pushInfo.PushType == consts.PUSH_TYPE_API {
 				pushDto := genPushInfo(order, orderProduct, pushInfo)
 
 				go doBackgroundPush(orderProduct, pushDto)
