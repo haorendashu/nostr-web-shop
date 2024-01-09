@@ -21,6 +21,23 @@ type PayOrder struct {
 	CheckedTime int64 `xorm:"notnull"` // The next check time
 }
 
+// query the payOrders need checked
+// created_at within 24 hours and expire_time great then now
+func PayOrdersNeedChecked(sessions ...*xorm.Session) []*PayOrder {
+	l := make([]*PayOrder, 0)
+	sql := "select * from pay_order po where po.status = ? and po.pay_status = ? and po.created_at < ? and po.expire_time > ?"
+
+	sqlArgs := make([]interface{}, 0)
+	sqlArgs = append(sqlArgs, consts.DATA_STATUS_OK)
+	sqlArgs = append(sqlArgs, consts.PAY_STATUS_UNPAY)
+	sqlArgs = append(sqlArgs, utils.NowInt64()-1000*60*60*24)
+	sqlArgs = append(sqlArgs, utils.NowInt64())
+
+	listQuery(sessions, &l, sql, sqlArgs...)
+
+	return l
+}
+
 func PayOrderGet(id string, sessions ...*xorm.Session) *PayOrder {
 	o := &PayOrder{}
 	if objGet(sessions, o, "id = ?", id) {

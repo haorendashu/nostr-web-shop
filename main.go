@@ -24,6 +24,8 @@ func main() {
 		return
 	}
 
+	go routers.BeginCheck()
+
 	r := gin.Default()
 
 	r.Use(gin.Logger(), gin.Recovery(), cors.New(cors.Config{

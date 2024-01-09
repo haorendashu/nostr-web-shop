@@ -140,7 +140,6 @@ func GetPushInfo(oid string) (*models.Order, []*dtos.OrderPushInfoDto) {
 		pushInfoMap[pushInfo.Pid] = pushInfo
 	}
 
-	now := utils.NowInt64()
 	list := make([]*dtos.OrderPushInfoDto, 0)
 	for _, orderProduct := range orderProducts {
 		pushInfo := pushInfoMap[orderProduct.Pid]
@@ -150,48 +149,91 @@ func GetPushInfo(oid string) (*models.Order, []*dtos.OrderPushInfoDto) {
 			continue
 		}
 
-		address := pushInfo.PushAddress
+		//address := pushInfo.PushAddress
+		//
+		//seller := orderProduct.Seller
+		//code := orderProduct.Code
+		//t := now
+		//
+		//orderProductId := orderProduct.Id
+		//buyer := order.Pubkey
+		//num := orderProduct.Num
+		//comment := url.QueryEscape(order.Comment)
+		//paidTime := order.PaidTime
+		//
+		//tempStr := fmt.Sprintf("%s%s%d%s%s%d%s%d", seller, code, t, buyer, comment, num, orderProductId, paidTime)
+		//log.Printf("pushUrl tempStr %s", tempStr)
+		//
+		//sign := utils.Md5(tempStr + pushInfo.PushKey)
+		//
+		//pushUrl := address
+		//if strings.Index(pushUrl, "?") == -1 {
+		//	pushUrl += "?"
+		//}
+		//
+		//pushUrl += "nws-seller=" + seller
+		//pushUrl += "&nws-code=" + code
+		//pushUrl += "&nws-t=" + fmt.Sprintf("%d", t)
+		//pushUrl += "&nws-sign=" + sign
+		//pushUrl += "&orderProductId=" + orderProductId
+		//pushUrl += "&buyer=" + buyer
+		//pushUrl += "&num=" + fmt.Sprintf("%d", num)
+		//pushUrl += "&comment=" + comment
+		//pushUrl += "&paidTime=" + fmt.Sprintf("%d", paidTime)
+		//
+		//dto := &dtos.OrderPushInfoDto{
+		//	OrderProductId: orderProductId,
+		//	PushType:       pushInfo.PushType,
+		//	PushUrl:        pushUrl,
+		//}
 
-		seller := orderProduct.Seller
-		code := orderProduct.Code
-		t := now
-
-		orderProductId := orderProduct.Id
-		buyer := order.Pubkey
-		num := orderProduct.Num
-		comment := url.QueryEscape(order.Comment)
-		paidTime := order.PaidTime
-
-		tempStr := fmt.Sprintf("%s%s%d%s%s%d%s%d", seller, code, t, buyer, comment, num, orderProductId, paidTime)
-		log.Printf("pushUrl tempStr %s", tempStr)
-
-		sign := utils.Md5(tempStr + pushInfo.PushKey)
-
-		pushUrl := address
-		if strings.Index(pushUrl, "?") == -1 {
-			pushUrl += "?"
-		}
-
-		pushUrl += "nws-seller=" + seller
-		pushUrl += "&nws-code=" + code
-		pushUrl += "&nws-t=" + fmt.Sprintf("%d", t)
-		pushUrl += "&nws-sign=" + sign
-		pushUrl += "&orderProductId=" + orderProductId
-		pushUrl += "&buyer=" + buyer
-		pushUrl += "&num=" + fmt.Sprintf("%d", num)
-		pushUrl += "&comment=" + comment
-		pushUrl += "&paidTime=" + fmt.Sprintf("%d", paidTime)
-
-		dto := &dtos.OrderPushInfoDto{
-			OrderProductId: orderProductId,
-			PushType:       pushInfo.PushType,
-			PushUrl:        pushUrl,
-		}
-
+		dto := genPushInfo(order, orderProduct, pushInfo)
 		list = append(list, dto)
 	}
 
 	return order, list
+}
+
+func genPushInfo(order *models.Order, orderProduct *models.OrderProduct, pushInfo *models.ProductPushInfo) *dtos.OrderPushInfoDto {
+	address := pushInfo.PushAddress
+
+	seller := orderProduct.Seller
+	code := orderProduct.Code
+	t := utils.NowInt64()
+
+	orderProductId := orderProduct.Id
+	buyer := order.Pubkey
+	num := orderProduct.Num
+	comment := url.QueryEscape(order.Comment)
+	paidTime := order.PaidTime
+
+	tempStr := fmt.Sprintf("%s%s%d%s%s%d%s%d", seller, code, t, buyer, comment, num, orderProductId, paidTime)
+	log.Printf("pushUrl tempStr %s", tempStr)
+
+	sign := utils.Md5(tempStr + pushInfo.PushKey)
+
+	pushUrl := address
+	if strings.Index(pushUrl, "?") == -1 {
+		pushUrl += "?"
+	}
+
+	pushUrl += "nws-seller=" + seller
+	pushUrl += "&nws-code=" + code
+	pushUrl += "&nws-t=" + fmt.Sprintf("%d", t)
+	pushUrl += "&nws-sign=" + sign
+	pushUrl += "&orderProductId=" + orderProductId
+	pushUrl += "&buyer=" + buyer
+	pushUrl += "&num=" + fmt.Sprintf("%d", num)
+	pushUrl += "&comment=" + comment
+	pushUrl += "&paidTime=" + fmt.Sprintf("%d", paidTime)
+
+	dto := &dtos.OrderPushInfoDto{
+		OrderProductId: orderProductId,
+		PushType:       pushInfo.PushType,
+		PushUrl:        pushUrl,
+	}
+
+	return dto
 }
 
 // check and update payOrder, order
