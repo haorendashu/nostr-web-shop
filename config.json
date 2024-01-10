@@ -4,5 +4,7 @@
   "DBShowLog": true,
   "RootFiles": ["favicon.ico"],
   "ShopPubkeys": ["37c10448a0fd9295d166100dcd80b01f52f3cc70c98431a89f480fc9f8256861"],
-  "LoginEventU": "https://api.nostrmo.com/login"
+  "LoginEventU": "https://api.nostrmo.com/login",
+  "PrivateKey": "",
+  "NoticeRelays": ["wss://nos.lol", "wss://nostr.wine", "wss://relay.damus.io/", "wss://atlas.nostr.land"]
 }

@@ -28,4 +28,7 @@ type Conf struct {
 	ShopPubkeys []string
 
 	LoginEventU string
+
+	PrivateKey   string
+	NoticeRelays []string
 }
