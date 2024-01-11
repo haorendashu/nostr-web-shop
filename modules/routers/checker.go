@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip04"
+	"github.com/nbd-wtf/go-nostr/nip19"
 	"log"
 	"net/http"
 	"nostr-web-shop/modules/consts"
@@ -74,8 +75,16 @@ func doPushWithDM(order *models.Order, orderProduct *models.OrderProduct, pushIn
 			return
 		}
 
+		buyer := order.Pubkey
+		buyer, err = nip19.EncodePublicKey(buyer)
+		if err != nil {
+			log.Printf("doPushFromDM nip19.EncodePublicKey error %s %v", order.Pubkey, err)
+			return
+		}
+		buyer = fmt.Sprintf("nostr:%s", buyer)
+
 		plainContent := fmt.Sprintf("Order notice\nProduct: %s \nProduct Code: %s \nNumber: %d\nBuyer: %s \nOrderProductId: %s",
-			orderProduct.Name, orderProduct.Code, orderProduct.Num, order.Pubkey, orderProduct.Id)
+			orderProduct.Name, orderProduct.Code, orderProduct.Num, buyer, orderProduct.Id)
 		encryptContent, err := nip04.Encrypt(plainContent, ss)
 		if err != nil {
 			log.Printf("doPushFromDM nip04.Encrypt error %v", err)
