@@ -2,6 +2,14 @@
 
 A Web Shop base Nostr and Lightning.
 
+## Base Description
+
+1. User login by Nostr (NIP-07) and place orders
+2. User Pay orders by Lightning.
+3. Nostr Web Shop push orders to seller's servcie.
+
+![nws-des](docs/imgs/nws-des.png)
+
 ## API
 
 These APIs are designed to provide queries to third-party services.
