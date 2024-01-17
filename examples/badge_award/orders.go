@@ -14,6 +14,8 @@ func loadOrders() {
 	os, err := utils.LoadPlainArray(ORDERS_FILE_NAME)
 	if err == nil {
 		ORDERS = os
+	} else {
+		log.Fatalf("%s read error %v", ORDERS_FILE_NAME, err)
 	}
 }
 

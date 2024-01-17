@@ -3,6 +3,7 @@
   "RootFiles": ["favicon.ico"],
   "PushKey": "",
   "PrivateKey": "",
-  "BadgeAId": "30009:8c8838bf8f36b861370bebc2acde8d175f2bd91f087dbb445edf7327931dd990:Nostrmo-Donor",
+  "ProductCodes": ["badgeProduct1"],
+  "BadgeAIds": ["30009:8c8838bf8f36b861370bebc2acde8d175f2bd91f087dbb445edf7327931dd990:Nostrmo-Donor"],
   "NoticeRelays": ["wss://nos.lol", "wss://nostr.wine", "wss://relay.damus.io/", "wss://atlas.nostr.land"]
 }

@@ -25,6 +25,7 @@ type Conf struct {
 
 	PushKey      string
 	PrivateKey   string
-	BadgeAId     string
+	ProductCodes []string
+	BadgeAIds    []string
 	NoticeRelays []string
 }

@@ -15,8 +15,6 @@ import (
 )
 
 func main() {
-	//flag.BoolVar(&syncDB, "syncDB", false, "sync object to databases.")
-	//flag.Parse()
 	ParseConf()
 	loadOrders()
 
@@ -61,7 +59,7 @@ func OrderReceive(c *gin.Context) {
 
 	pubkey, err := nostr.GetPublicKey(utils.CONFIG.PrivateKey)
 	if err != nil {
-		c.JSON(http.StatusForbidden, routers.Result(consts.RESULT_CODE_ERROR, "pubkey gen error"))
+		c.JSON(http.StatusInternalServerError, routers.Result(consts.RESULT_CODE_ERROR, "pubkey gen error"))
 		return
 	}
 
@@ -74,12 +72,26 @@ func OrderReceive(c *gin.Context) {
 
 	addOrder(orderProductId)
 
+	// get badgeAId by productCode
+	badgeAId := ""
+	size := len(CONFIG.BadgeAIds)
+	for index, productCode := range CONFIG.ProductCodes {
+		if productCode == code && index < size {
+			badgeAId = CONFIG.BadgeAIds[index]
+		}
+	}
+
+	if badgeAId == "" {
+		c.JSON(http.StatusInternalServerError, routers.Result(consts.RESULT_CODE_ERROR, "badgeAId not found"))
+		return
+	}
+
 	// check complete, send Badge Award event
 	awardEvent := nostr.Event{
 		PubKey:    pubkey,
 		CreatedAt: nostr.Now(),
 		Kind:      8,
-		Tags:      []nostr.Tag{[]string{"a", CONFIG.BadgeAId}, []string{"p", buyer}},
+		Tags:      []nostr.Tag{[]string{"a", badgeAId}, []string{"p", buyer}},
 		Content:   "",
 	}
 	awardEvent.Sign(utils.CONFIG.PrivateKey)
